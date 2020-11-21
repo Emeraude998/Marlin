@@ -213,8 +213,8 @@
   #include "feature/controllerfan.h"
 #endif
 
-#if HAS_PRUSA_MMU2
-  #include "feature/mmu/mmu2.h"
+#if ENABLED(PRUSA_MMU2)
+  #include "feature/mmu2/mmu2.h"
 #endif
 
 #if HAS_L64XX
@@ -713,7 +713,9 @@ void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
   TERN_(HAS_FILAMENT_SENSOR, runout.run());
 
   // Run HAL idle tasks
-  TERN_(HAL_IDLETASK, HAL_idletask());
+  #ifdef HAL_IDLETASK
+    HAL_idletask();
+  #endif
 
   // Check network connection
   TERN_(HAS_ETHERNET, ethernet.check());
@@ -770,7 +772,7 @@ void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
   #endif
 
   // Update the Průša MMU2
-  TERN_(HAS_PRUSA_MMU2, mmu2.mmu_loop());
+  TERN_(PRUSA_MMU2, mmu2.mmu_loop());
 
   // Handle Joystick jogging
   TERN_(POLL_JOG, joystick.inject_jog_moves());
@@ -778,8 +780,9 @@ void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
   // Direct Stepping
   TERN_(DIRECT_STEPPING, page_manager.write_responses());
 
-  // Update the LVGL interface
-  TERN_(HAS_TFT_LVGL_UI, LV_TASK_HANDLER());
+  #if HAS_TFT_LVGL_UI
+    LV_TASK_HANDLER();
+  #endif
 }
 
 /**
@@ -979,7 +982,7 @@ void setup() {
   #endif
   SERIAL_ECHO_MSG("start");
 
-  #if BOTH(HAS_TFT_LVGL_UI, MKS_WIFI_MODULE)
+  #if BOTH(HAS_TFT_LVGL_UI, USE_WIFI_FUNCTION)
     mks_esp_wifi_init();
     WIFISERIAL.begin(WIFI_BAUDRATE);
     serial_connect_timeout = millis() + 1000UL;
@@ -1184,8 +1187,8 @@ void setup() {
     SETUP_RUN(caselight.update_brightness());
   #endif
 
-  #if HAS_PRUSA_MMU1
-    SETUP_LOG("Prusa MMU1");
+  #if ENABLED(MK2_MULTIPLEXER)
+    SETUP_LOG("MK2_MULTIPLEXER");
     SET_OUTPUT(E_MUX0_PIN);
     SET_OUTPUT(E_MUX1_PIN);
     SET_OUTPUT(E_MUX2_PIN);
@@ -1265,7 +1268,7 @@ void setup() {
     SETUP_RUN(test_tmc_connection(true, true, true, true));
   #endif
 
-  #if HAS_PRUSA_MMU2
+  #if ENABLED(PRUSA_MMU2)
     SETUP_RUN(mmu2.init());
   #endif
 

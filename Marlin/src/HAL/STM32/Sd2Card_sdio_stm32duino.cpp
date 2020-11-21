@@ -31,7 +31,7 @@
   #error "ERROR - Only STM32F103xE, STM32F103xG, STM32F4xx or STM32F7xx CPUs supported"
 #endif
 
-#if HAS_SD_HOST_DRIVE
+#ifdef USBD_USE_CDC_COMPOSITE
 
   // use USB drivers
 

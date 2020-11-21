@@ -32,7 +32,11 @@ bool tiny_timer_t::elapsed(tiny_time_t duration) {
     #endif
   );
   uint8_t elapsed = now - _start;
-  return elapsed >= duration._duration;
+  if (elapsed >= duration._duration) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 void tiny_timer_t::start() {
