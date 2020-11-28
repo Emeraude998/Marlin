@@ -30,6 +30,10 @@
 
 #include "../inc/MarlinConfig.h"
 
+#if ENABLED(GCODE_REPEAT_MARKERS)
+  #include "../feature/repeat.h"
+#endif
+
 #if ENABLED(MIXING_EXTRUDER)
   #include "../feature/mixing.h"
 #endif
@@ -49,14 +53,8 @@ typedef struct {
   xyze_pos_t current_position;
   float zraise;
 
-  #if HAS_HOME_OFFSET
-    xyz_pos_t home_offset;
-  #endif
-  #if HAS_POSITION_SHIFT
-    xyz_pos_t position_shift;
-  #endif
-
-  uint16_t feedrate;
+  // Repeat information
+  TERN_(GCODE_REPEAT_MARKERS, Repeat stored_repeat);
 
   #if HAS_MULTI_EXTRUDER
     uint8_t active_extruder;
