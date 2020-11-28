@@ -707,6 +707,35 @@ void MarlinUI::draw_status_message(const bool blink) {
  *  |01234567890123456789|
  */
 
+inline uint8_t draw_elapsed_or_remaining_time(uint8_t timepos, const bool blink) {
+  char buffer[14];
+
+  #if ENABLED(SHOW_REMAINING_TIME)
+    const bool show_remain = TERN1(ROTATE_PROGRESS_DISPLAY, blink) && (printingIsActive() || marlin_state == MF_SD_COMPLETE);
+    if (show_remain) {
+      #if ENABLED(USE_M73_REMAINING_TIME)
+        duration_t remaining = ui.get_remaining_time();
+      #else
+        uint8_t progress = ui.get_progress_percent();
+        uint32_t elapsed = print_job_timer.duration();
+        duration_t remaining = (progress > 0) ? ((elapsed * 25600 / progress) >> 8) - elapsed : 0;
+      #endif
+      timepos -= remaining.toDigital(buffer);
+      lcd_put_wchar(timepos, 2, 'R');
+    }
+  #else
+    constexpr bool show_remain = false;
+  #endif
+
+  if (!show_remain) {
+    duration_t elapsed = print_job_timer.duration();
+    timepos -= elapsed.toDigital(buffer);
+    lcd_put_wchar(timepos, 2, LCD_STR_CLOCK[0]);
+  }
+  lcd_put_u8str(buffer);
+  return timepos;
+}
+
 void MarlinUI::draw_status_screen() {
 
   const bool blink = get_blink();
