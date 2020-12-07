@@ -28,8 +28,6 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "AnyCubic/Mega Zero/Anycubic V1"
-
 //
 // Status Screen Logo bitmap
 //

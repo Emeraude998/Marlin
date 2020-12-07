@@ -21,8 +21,6 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Intamsys/FunmatHT 4988"
-
 /**
  * Custom Status Screen bitmap
  *
