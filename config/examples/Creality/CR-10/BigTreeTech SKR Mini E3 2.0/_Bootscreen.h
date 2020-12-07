@@ -21,8 +21,6 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "Creality/CR-10/BigTreeTech SKR Mini E3 2.0"
-
 /**
  * Custom Boot Screen bitmap
  *

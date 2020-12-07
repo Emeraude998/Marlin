@@ -21,8 +21,6 @@
  */
 #pragma once
 
-#define CONFIG_EXAMPLES_DIR "FlyingBear/P905H"
-
 /**
  * Configuration_adv.h
  *
