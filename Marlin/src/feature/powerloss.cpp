@@ -180,6 +180,7 @@ void PrintJobRecovery::save(const bool force/*=false*/, const float zraise/*=0*/
 
     // Machine state
     info.current_position = current_position;
+    info.feedrate = uint16_t(MMS_TO_MMM(feedrate_mm_s));
     info.zraise = zraise;
 
     TERN_(GCODE_REPEAT_MARKERS, info.stored_repeat = repeat);
