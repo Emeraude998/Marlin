@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#define CONFIG_EXAMPLES_DIR "Creality/CR-10 S5/CrealityV1"
+
 /**
  * Custom Status Screen bitmap
  *
