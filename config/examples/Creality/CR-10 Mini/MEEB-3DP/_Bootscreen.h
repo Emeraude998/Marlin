@@ -21,6 +21,8 @@
  */
 #pragma once
 
+#define CONFIG_EXAMPLES_DIR "Creality/CR-10 Mini/MEEB-3DP"
+
 /**
  * Custom Boot Screen bitmap
  *
