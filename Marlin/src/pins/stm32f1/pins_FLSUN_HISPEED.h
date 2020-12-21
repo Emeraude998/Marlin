@@ -58,7 +58,10 @@
 // SPI
 // Note: FLSun Hispeed (clone MKS_Robin_miniV2) board is using SPI2 interface.
 //
-#define SPI_DEVICE                             2
+#define SPI_DEVICE 2
+#define SCK_PIN                            PB13  // SPI2
+#define MISO_PIN                           PB14  // SPI2
+#define MOSI_PIN                           PB15  // SPI2
 
 // SPI Flash
 #define HAS_SPI_FLASH                          1
@@ -281,62 +284,46 @@
   #define BEEPER_PIN                        PC5
 #endif
 
-/**
- * Note: MKS Robin TFT screens use various TFT controllers
- * Supported screens are based on the ILI9341, ST7789V and ILI9328 (320x240)
- * ILI9488 is not supported
- * Define init sequences for other screens in u8g_dev_tft_320x240_upscale_from_128x64.cpp
- *
- * If the screen stays white, disable 'LCD_RESET_PIN'
- * to let the bootloader init the screen.
- *
- * Setting an 'LCD_RESET_PIN' may cause a flicker when entering the LCD menu
- * because Marlin uses the reset as a failsafe to revive a glitchy LCD.
- */
+#if ENABLED(SPEAKER) && BEEPER_PIN == PC5
+  #error "FLSun HiSpeed default BEEPER_PIN is not a SPEAKER."
+#endif
 
-// MKS Robin TFT v2.0 with ILI9341
-// Read display identification information (0xD3 on ILI9341)
-//#define TOUCH_CALIBRATION_X              12013
-//#define TOUCH_CALIBRATION_Y              -8711
-//#define TOUCH_OFFSET_X                     -32
-//#define TOUCH_OFFSET_Y                     256
+#if HAS_FSMC_TFT || HAS_GRAPHICAL_TFT
+  #define TFT_CS_PIN                        PD7   // NE4
+  #define TFT_RS_PIN                        PD11  // A0
+#endif
 
-// MKS Robin TFT v1.1 with ILI9328
-//#define TOUCH_CALIBRATION_X             -11792
-//#define TOUCH_CALIBRATION_Y               8947
-//#define TOUCH_OFFSET_X                     342
-//#define TOUCH_OFFSET_Y                     -19
-
-// MKS Robin TFT v1.1 with R61505
-//#define TOUCH_CALIBRATION_X              12489
-//#define TOUCH_CALIBRATION_Y               9210
-//#define TOUCH_OFFSET_X                     -52
-//#define TOUCH_OFFSET_Y                     -17
-
-// QQS-Pro uses MKS Robin TFT v2.0
-
-// Shared FSMC Configs
 #if HAS_FSMC_TFT
-  #define DOGLCD_MOSI                       -1    // Prevent auto-define by Conditionals_post.h
-  #define DOGLCD_SCK                        -1
-
-  #define FSMC_CS_PIN                       PD7   // NE4
-  #define FSMC_RS_PIN                       PD11  // A0
-
-  #define TFT_RESET_PIN                     PC6   // FSMC_RST
+  /**
+   * Note: MKS Robin TFT screens use various TFT controllers
+   * Supported screens are based on the ILI9341, ST7789V and ILI9328 (320x240)
+   * ILI9488 is not supported
+   * Define init sequences for other screens in u8g_dev_tft_320x240_upscale_from_128x64.cpp
+   *
+   * If the screen stays white, disable 'LCD_RESET_PIN'
+   * to let the bootloader init the screen.
+   *
+   * Setting an 'LCD_RESET_PIN' may cause a flicker when entering the LCD menu
+   * because Marlin uses the reset as a failsafe to revive a glitchy LCD.
+   */
+  //#define TFT_RESET_PIN                   PC6   // FSMC_RST
   #define TFT_BACKLIGHT_PIN                 PD13
+  #define FSMC_CS_PIN                 TFT_CS_PIN  // NE4
+  #define FSMC_RS_PIN                 TFT_RS_PIN  // A0
 
   #define LCD_USE_DMA_FSMC                        // Use DMA transfers to send data to the TFT
   #define FSMC_DMA_DEV                      DMA2
   #define FSMC_DMA_CHANNEL               DMA_CH5
-
-  #define TFT_BUFFER_SIZE                  14400
-  #if ENABLED(TFT_CLASSIC_UI)
-    #define TFT_MARLINBG_COLOR            0x3186  // White
-    #define TFT_MARLINUI_COLOR            0xC7B6  // green
+  #ifdef TFT_CLASSIC_UI
+    #define TFT_MARLINBG_COLOR            0x3186  // Grey
+    #define TFT_MARLINUI_COLOR            0xC7B6  // Green
     #define TFT_BTARROWS_COLOR            0xDEE6  // Yellow
     #define TFT_BTOKMENU_COLOR            0x145F  // Cyan
-  #endif
+  #endif  
+  #define TFT_BUFFER_SIZE                  14400
+#elif HAS_GRAPHICAL_TFT
+  #define TFT_RESET_PIN                     PC6
+  #define TFT_BACKLIGHT_PIN                 PD13
 #endif
 
 #if NEED_TOUCH_PINS
@@ -344,4 +331,5 @@
   #define TOUCH_SCK_PIN                     PB13  // SPI2_SCK
   #define TOUCH_MISO_PIN                    PB14  // SPI2_MISO
   #define TOUCH_MOSI_PIN                    PB15  // SPI2_MOSI
+  #define TOUCH_INT_PIN                     -1
 #endif
