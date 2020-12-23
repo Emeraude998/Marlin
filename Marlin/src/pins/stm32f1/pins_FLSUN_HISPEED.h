@@ -40,6 +40,9 @@
 
 #define BOARD_NO_NATIVE_USB
 
+// Avoid conflict with TIMER_SERVO when using the STM32 HAL
+#define TEMP_TIMER 5
+
 //
 // Release PB4 (Y_ENABLE_PIN) from JTAG NRST role
 //
@@ -111,47 +114,21 @@
 #define E0_STEP_PIN                         PD6   // E0_STEP
 #define E0_DIR_PIN                          PD3   // E0_DIR
 
-//
-// Drivers
-//
-#if HAS_TMC220x
-
-  #if ENABLED(HARDWARE_SERIAL)  /*  TMC2209 */
-    #define X_SLAVE_ADDRESS                    3  // |  |  :
-    #define Y_SLAVE_ADDRESS                    2  // :  |  :
-    #define Z_SLAVE_ADDRESS                    1  // |  :  :
-    //#define E0_SLAVE_ADDRESS                 0  // :  :  :
-
-    #define X_SERIAL_TX_PIN                 PA9   // TXD1
-    #define X_SERIAL_RX_PIN                 PA9   // TXD1
-
-    #define Y_SERIAL_TX_PIN                 PA9   // TXD1
-    #define Y_SERIAL_RX_PIN                 PA9   // TXD1
-
-    #define Z_SERIAL_TX_PIN                 PA9   // TXD1
-    #define Z_SERIAL_RX_PIN                 PA9   // TXD1
-
-  #elif ENABLED(SOFTWARE_SERIAL)  /*  TMC220x   */
-    /**
-     * TMC2208 stepper UART-configurable by PDN_UART pin
-     * Software serial
-     */
-    #define X_SLAVE_ADDRESS                    0
-    #define Y_SLAVE_ADDRESS                    0
-    #define Z_SLAVE_ADDRESS                    0
-
-    #define X_SERIAL_TX_PIN                 PA10  // RXD1
-    #define X_SERIAL_RX_PIN                 PA10  // RXD1
-
-    #define Y_SERIAL_TX_PIN                 PA9   // TXD1
-    #define Y_SERIAL_RX_PIN                 PA9   // TXD1
-
-    #define Z_SERIAL_TX_PIN                 PC7   // IO1
-    #define Z_SERIAL_RX_PIN                 PC7   // IO1
-
-  #endif
-  // Reduce baud rate to improve software serial reliability
-  #define TMC_BAUD_RATE                    19200
+/**
+ * FLSUN Hi-Speed has no hard-wired UART pins for TMC drivers.
+ * Several wiring options are provided below, defaulting to
+ * to the most compatible.
+ */
+#if HAS_TMC_UART
+  // SoftwareSerial with one pin per driver
+  // Compatible with TMC2208 and TMC2209 drivers
+  #define X_SERIAL_TX_PIN                   PA10  // RXD1
+  #define X_SERIAL_RX_PIN                   PA10  // RXD1
+  #define Y_SERIAL_TX_PIN                   PA9   // TXD1
+  #define Y_SERIAL_RX_PIN                   PA9   // TXD1
+  #define Z_SERIAL_TX_PIN                   PC7   // IO1
+  #define Z_SERIAL_RX_PIN                   PC7   // IO1
+  #define TMC_BAUD_RATE                   19200
 #else
 
   // Motor current PWM pins
@@ -163,24 +140,26 @@
   #endif
 
   /**
-   * src: MKS Robin_Mini V2
-   *           __ESP(M1)__           -J1-
-   *       GND| 15 | | 08 |+3v3      (22)=>RXD1(PA10)  //
-   *          | 16 | | 07 |MOSI      (21)=>TXD1(PA9)   // active low, probably OK to leave floating
-   *       IO2| 17 | | 06 |MISO      (19)=>IO1(PC7)    // Leave as unused (ESP3D software configures this with a pullup so OK to leave as floating)
-   *       IO0| 18 | | 05 |CLK       (18)=>IO0(PA8)    // must be high (ESP3D software configures this with a pullup so OK to leave as floating)
-   *       IO1| 19 | | 03 |EN        (03)=>WIFI_EN()   // Must be high for module to run
-   *          | nc | | nc |          (01)=>WIFI_CTRL(PA5)
-   *        RX| 21 | | nc |
-   *        TX| 22 | | 01 |RST
-   *            ￣￣ AE￣￣
+   * MKS Robin_Wifi or another ESP8266 module
    *
+   *      __ESP(M1)__       -J1-
+   *  GND| 15 | | 08 |+3v3  (22)  RXD1      (PA10)
+   *     | 16 | | 07 |MOSI  (21)  TXD1      (PA9)   Active LOW, probably OK to leave floating
+   *  IO2| 17 | | 06 |MISO  (19)  IO1       (PC7)   Leave as unused (ESP3D software configures this with a pullup so OK to leave as floating)
+   *  IO0| 18 | | 05 |CLK   (18)  IO0       (PA8)   Must be HIGH (ESP3D software configures this with a pullup so OK to leave as floating)
+   *  IO1| 19 | | 03 |EN    (03)  WIFI_EN           Must be HIGH for module to run
+   *     | nc | | nc |      (01)  WIFI_CTRL (PA5)
+   *   RX| 21 | | nc |
+   *   TX| 22 | | 01 |RST
+   *       ￣￣ AE￣￣
    */
-  #ifdef ESP_WIFI
-    #define WIFI_IO0_PIN                    PA8   // PC13 MKS ESP WIFI IO0 PIN
-    #define WIFI_IO1_PIN                    PC7   // MKS ESP WIFI IO1 PIN
-    #define WIFI_RESET_PIN                  PA5   // MKS ESP WIFI RESET PIN
-  #endif
+  // Module ESP-WIFI
+  #define ESP_WIFI_MODULE_COM                  2  // Must also set either SERIAL_PORT or SERIAL_PORT_2 to this
+  #define ESP_WIFI_MODULE_BAUDRATE      BAUDRATE  // Must use same BAUDRATE as SERIAL_PORT & SERIAL_PORT_2
+  #define ESP_WIFI_MODULE_RESET_PIN         PA5   // WIFI CTRL/RST
+  #define ESP_WIFI_MODULE_ENABLE_PIN        -1
+  #define ESP_WIFI_MODULE_TXD_PIN           PA9   // MKS or ESP WIFI RX PIN
+  #define ESP_WIFI_MODULE_RXD_PIN           PA10  // MKS or ESP WIFI TX PIN
 #endif
 
 //
@@ -319,7 +298,7 @@
     #define TFT_MARLINUI_COLOR            0xC7B6  // Green
     #define TFT_BTARROWS_COLOR            0xDEE6  // Yellow
     #define TFT_BTOKMENU_COLOR            0x145F  // Cyan
-  #endif  
+  #endif
   #define TFT_BUFFER_SIZE                  14400
 #elif HAS_GRAPHICAL_TFT
   #define TFT_RESET_PIN                     PC6
