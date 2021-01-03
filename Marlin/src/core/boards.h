@@ -189,7 +189,7 @@
 #define BOARD_GEN3_PLUS               1601  // Gen3+
 #define BOARD_GEN6                    1602  // Gen6
 #define BOARD_GEN6_DELUXE             1603  // Gen6 deluxe
-#define BOARD_GEN7_CUSTOM             1604  // Gen7 custom (Alfons3 Version) "https://github.com/Alfons3/Generation_7_Electronics"
+#define BOARD_GEN7_CUSTOM             1604  // Gen7 custom (Alfons3 Version) https://github.com/Alfons3/Generation_7_Electronics
 #define BOARD_GEN7_12                 1605  // Gen7 v1.1, v1.2
 #define BOARD_GEN7_13                 1606  // Gen7 v1.3
 #define BOARD_GEN7_14                 1607  // Gen7 v1.4
@@ -330,13 +330,14 @@
 #define BOARD_CHITU3D_V6              4037  // Chitu3D TronXY X5SA V5 Board
 #define BOARD_CREALITY_V4             4038  // Creality v4.x (STM32F103RE)
 #define BOARD_CREALITY_V427           4039  // Creality v4.2.7 (STM32F103RE)
-#define BOARD_CREALITY_V431           4040  // Creality v4.3.1 (STM32F103RE)
-#define BOARD_CREALITY_V452           4041  // Creality v4.5.2 (STM32F103RE)
-#define BOARD_CREALITY_V453           4042  // Creality v4.5.3 (STM32F103RE)
-#define BOARD_TRIGORILLA_PRO          4043  // Trigorilla Pro (STM32F103ZET6)
-#define BOARD_FLY_MINI                4044  // FLY MINI (STM32F103RCT6)
-#define BOARD_FLSUN_HISPEED           4045  // FLSUN HiSpeedV1 (STM32F103VET6)
-#define BOARD_BEAST                   4046  // STM32F103RET6 Libmaple-based controller
+#define BOARD_CREALITY_V4210          4040  // Creality v4.2.10 (STM32F103RE) as found in the CR-30
+#define BOARD_CREALITY_V431           4041  // Creality v4.3.1 (STM32F103RE)
+#define BOARD_CREALITY_V452           4042  // Creality v4.5.2 (STM32F103RE)
+#define BOARD_CREALITY_V453           4043  // Creality v4.5.3 (STM32F103RE)
+#define BOARD_TRIGORILLA_PRO          4044  // Trigorilla Pro (STM32F103ZET6)
+#define BOARD_FLY_MINI                4045  // FLY MINI (STM32F103RCT6)
+#define BOARD_FLSUN_HISPEED           4046  // FLSUN HiSpeedV1 (STM32F103VET6)
+#define BOARD_BEAST                   4047  // STM32F103RET6 Libmaple-based controller
 
 //
 // ARM Cortex-M4F
