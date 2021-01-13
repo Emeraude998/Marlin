@@ -132,7 +132,6 @@ void MMU2::init() {
   set_runout_valid(false);
 
   #if PIN_EXISTS(MMU2_RST)
-    // TODO use macros for this
     WRITE(MMU2_RST_PIN, HIGH);
     SET_OUTPUT(MMU2_RST_PIN);
   #endif
@@ -926,11 +925,17 @@ void MMU2::filament_runout() {
 
     if (!enabled) return false;
 
-    if (thermalManager.tooColdToExtrude(active_extruder)) {
-      BUZZ(200, 404);
-      LCD_ALERTMESSAGEPGM(MSG_HOTEND_TOO_COLD);
-      return false;
-    }
+/**
+ * Load filament to nozzle of multimaterial printer
+ *
+ * This function is used only after T? (user select filament) and M600 (change filament).
+ * It is not used after T0 .. T4 command (select filament), in such case, gcode is responsible for loading
+ * filament to nozzle.
+ */
+void MMU2::load_to_nozzle() {
+  if (!enabled) return;
+  execute_extruder_sequence((const E_Step *)load_to_nozzle_sequence, COUNT(load_to_nozzle_sequence));
+}
 
     command(MMU_CMD_T0 + index);
     manage_response(true, true);
