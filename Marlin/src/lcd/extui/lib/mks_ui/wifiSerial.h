@@ -25,8 +25,8 @@
 
 #if ENABLED(USE_WIFI_FUNCTION)
 
-#if SERIAL_PORT_2 != -1
-  #error "SERIAL_PORT_2 must be set to -1 with HAS_TFT_LVGL_UI and USE_WIFI_FUNCTION."
+#ifdef SERIAL_PORT_2
+  #error "SERIAL_PORT_2 must be disabled with TFT_LVGL_UI* and MKS_WIFI_MODULE."
 #endif
 
 #define WIFI_BAUDRATE          115200
