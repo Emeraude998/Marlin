@@ -72,11 +72,8 @@ private:
   static bool get_response();
   static void manage_response(const bool move_axes, const bool turn_off_nozzle);
 
-  #if BOTH(HAS_LCD_MENU, MMU2_MENUS)
-    static void load_to_nozzle();
-    static void filament_ramming();
-    static void execute_extruder_sequence(const E_Step * sequence, int steps);
-  #endif
+  static void load_to_nozzle();
+  static void execute_extruder_sequence(const E_Step * sequence, int steps);
 
   static void filament_runout();
 
