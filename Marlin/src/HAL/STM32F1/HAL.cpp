@@ -84,6 +84,7 @@
 
 #if (defined(SERIAL_USB) && !defined(USE_USB_COMPOSITE))
   USBSerial SerialUSB;
+  DefaultSerial MSerial(false, SerialUSB);
 #endif
 
 uint16_t HAL_adc_result;
