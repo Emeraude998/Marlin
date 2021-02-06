@@ -419,8 +419,7 @@ inline void manage_inactivity(const bool ignore_stepper_queue=false) {
   if (parked_or_ignoring) gcode.reset_stepper_timeout(ms);
 
   if (gcode.stepper_max_timed_out(ms)) {
-    SERIAL_ERROR_START();
-    SERIAL_ECHOLNPAIR(STR_KILL_INACTIVE_TIME, parser.command_ptr);
+    SERIAL_ERROR_MSG(STR_KILL_INACTIVE_TIME, parser.command_ptr);
     kill();
   }
 
@@ -614,8 +613,8 @@ inline void manage_inactivity(const bool ignore_stepper_queue=false) {
  */
 void idle(TERN_(ADVANCED_PAUSE_FEATURE, bool no_stepper_sleep/*=false*/)) {
   #if ENABLED(MARLIN_DEV_MODE)
-    static uint8_t idle_depth = 0;
-    if (++idle_depth > 5) SERIAL_ECHOLNPAIR("idle() call depth: ", int(idle_depth));
+    static uint16_t idle_depth = 0;
+    if (++idle_depth > 5) SERIAL_ECHOLNPAIR("idle() call depth: ", idle_depth);
   #endif
 
   // Core Marlin activities
@@ -888,6 +887,17 @@ void setup() {
   #endif
   #define SETUP_RUN(C) do{ SETUP_LOG(STRINGIFY(C)); C; }while(0)
 
+  MYSERIAL0.begin(BAUDRATE);
+  millis_t serial_connect_timeout = millis() + 1000UL;
+  while (!MYSERIAL0.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
+
+  #if HAS_MULTI_SERIAL && !HAS_ETHERNET
+    MYSERIAL1.begin(BAUDRATE);
+    serial_connect_timeout = millis() + 1000UL;
+    while (!MYSERIAL1.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
+  #endif
+  SERIAL_ECHOLNPGM("start");
+
   // Set up these pins early to prevent suicide
   #if HAS_KILL
     SETUP_LOG("KILL_PIN");
@@ -920,18 +930,7 @@ void setup() {
     #endif
   #endif
 
-  MYSERIAL0.begin(BAUDRATE);
-  millis_t serial_connect_timeout = millis() + 1000UL;
-  while (!MYSERIAL0.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
-
-  #if HAS_MULTI_SERIAL && !HAS_ETHERNET
-    MYSERIAL1.begin(BAUDRATE);
-    serial_connect_timeout = millis() + 1000UL;
-    while (!MYSERIAL1.connected() && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
-  #endif
-  SERIAL_ECHOLNPGM("start");
-
-  #if BOTH(HAS_TFT_LVGL_UI, USE_WIFI_FUNCTION)
+  #if BOTH(HAS_TFT_LVGL_UI, MKS_WIFI_MODULE)
     mks_esp_wifi_init();
     WIFISERIAL.begin(WIFI_BAUDRATE);
     serial_connect_timeout = millis() + 1000UL;
@@ -1007,6 +1006,9 @@ void setup() {
   #endif
   SERIAL_ECHO_MSG("Compiled: " __DATE__);
   SERIAL_ECHO_MSG(STR_FREE_MEMORY, freeMemory(), STR_PLANNER_BUFFER_BYTES, (int)sizeof(block_t) * (BLOCK_BUFFER_SIZE));
+
+  // Some HAL need precise delay adjustment
+  calibrate_delay_loop();
 
   // Init buzzer pin(s)
   #if USE_BEEPER
