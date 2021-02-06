@@ -19,27 +19,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+#pragma once
 
-#include "../../inc/MarlinConfig.h"
+#ifdef __cplusplus
+  extern "C" { /* C-declarations for C++ */
+#endif
 
-#if ENABLED(HOST_KEEPALIVE_FEATURE)
+extern void lv_draw_gcode(bool clear = false);
+extern void lv_clear_gcode();
 
-#include "../gcode.h"
-
-/**
- * M113: Get or set Host Keepalive interval (0 to disable)
- *
- *   S<seconds> Optional. Set the keepalive interval.
- */
-void GcodeSuite::M113() {
-
-  if (parser.seenval('S')) {
-    host_keepalive_interval = parser.value_byte();
-    NOMORE(host_keepalive_interval, 60);
-  }
-  else
-    SERIAL_ECHO_MSG("M113 S", (uint16_t)host_keepalive_interval);
-
-}
-
-#endif // HOST_KEEPALIVE_FEATURE
+#ifdef __cplusplus
+  } /* C-declarations for C++ */
+#endif

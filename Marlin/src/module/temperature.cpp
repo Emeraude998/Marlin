@@ -1037,8 +1037,7 @@ void Temperature::min_temp_error(const heater_id_t heater_id) {
 
     #if ENABLED(PID_BED_DEBUG)
     {
-      SERIAL_ECHO_START();
-      SERIAL_ECHOLNPAIR(
+      SERIAL_ECHO_MSG(
         " PID_BED_DEBUG : Input ", temp_bed.celsius, " Output ", pid_output,
         #if DISABLED(PID_OPENLOOP)
           STR_PID_DEBUG_PTERM, work_pid.Kp,
@@ -2062,7 +2061,7 @@ void Temperature::init() {
       switch (heater_id) {
         case H_BED:     SERIAL_ECHOPGM("bed"); break;
         case H_CHAMBER: SERIAL_ECHOPGM("chamber"); break;
-        default:        SERIAL_ECHO(heater_id);
+        default:        SERIAL_ECHO((int)heater_id);
       }
       SERIAL_ECHOLNPAIR(
         " ; sizeof(running_temp):", sizeof(running_temp),
@@ -3123,8 +3122,8 @@ void Temperature::tick() {
   }
 
   #if ENABLED(AUTO_REPORT_TEMPERATURES)
-    Temperature::AutoReportTemp Temperature::auto_reporter;
-    void Temperature::AutoReportTemp::auto_report() {
+    AutoReporter<Temperature::AutoReportTemp> Temperature::auto_reporter;
+    void Temperature::AutoReportTemp::report() {
       print_heater_states(active_extruder);
       SERIAL_EOL();
     }

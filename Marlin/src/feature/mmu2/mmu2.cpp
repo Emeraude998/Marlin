@@ -518,8 +518,7 @@ static void mmu2_not_responding() {
         extruder = index; // filament change is finished
         active_extruder = 0;
         ENABLE_AXIS_E0();
-        SERIAL_ECHO_START();
-        SERIAL_ECHOLNPAIR(STR_ACTIVE_EXTRUDER, int(extruder));
+        SERIAL_ECHO_MSG(STR_ACTIVE_EXTRUDER, int(extruder));
       }
       ui.reset_status();
     }
@@ -603,8 +602,7 @@ static void mmu2_not_responding() {
       active_extruder = 0;
 
       ENABLE_AXIS_E0();
-      SERIAL_ECHO_START();
-      SERIAL_ECHOLNPAIR(STR_ACTIVE_EXTRUDER, int(extruder));
+      SERIAL_ECHO_MSG(STR_ACTIVE_EXTRUDER, int(extruder));
 
       ui.reset_status();
     }
@@ -684,7 +682,18 @@ static void mmu2_not_responding() {
 void MMU2::tool_change(const uint8_t index) {
   if (!enabled) return;
 
-  set_runout_valid(false);
+    if (index != extruder) {
+      DISABLE_AXIS_E0();
+      ui.status_printf_P(0, GET_TEXT(MSG_MMU2_LOADING_FILAMENT), int(index + 1));
+      command(MMU_CMD_T0 + index);
+      manage_response(true, true);
+      command(MMU_CMD_C0);
+      extruder = index; //filament change is finished
+      active_extruder = 0;
+      ENABLE_AXIS_E0();
+      SERIAL_ECHO_MSG(STR_ACTIVE_EXTRUDER, int(extruder));
+      ui.reset_status();
+    }
 
   if (index != extruder) {
     DISABLE_AXIS_E0();
