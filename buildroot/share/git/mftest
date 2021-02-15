@@ -33,8 +33,8 @@ case $TESTENV in
      due) TESTENV='DUE' ;;
      esp) TESTENV='esp32' ;;
     lin*) TESTENV='linux_native' ;;
- lpc?(8)) TESTENV='LPC1768' ;;
-    lpc9) TESTENV='LPC1769' ;;
+lp8|lpc8) TESTENV='LPC1768' ;;
+lp9|lpc9) TESTENV='LPC1769' ;;
     m128) TESTENV='mega1280' ;;
     m256) TESTENV='mega2560' ;;
     mega) TESTENV='mega2560' ;;
@@ -50,81 +50,7 @@ case $TESTENV in
      t36) TESTENV='teensy35' ;;
      t40) TESTENV='teensy41' ;;
      t41) TESTENV='teensy41' ;;
-
--h|--help)  echo -e "$(basename $0) : Marlin Firmware test, build, and upload\n"
-            echo "Usage: $(basename $0) ................. Select env and test to apply / run"
-            echo "       $(basename $0) [-y] env ........ Select a test for env to apply / run"
-            echo "       $(basename $0) [-y] env test ... Apply / run the specified env test"
-            echo "       $(basename $0) -b [variant] .... Auto-build the specified variant"
-            echo "       $(basename $0) -u [variant] .... Auto-build and upload the specified variant"
-            echo
-            echo "env shortcuts: tree due esp lin lpc|lpc8 lpc9 m128 m256|mega stm|f1 f4 f7 s6 teensy|t31|t32 t35|t36 t40|t41"
-            exit
-            ;;
-
-          # Build with the last-built env
-      -r) [[ -f "$STATE_FILE" ]] || { echo "No previous (-r) build state found." ; exit 1 ; }
-          read TESTENV <"$STATE_FILE"
-          pio run -d . -e $TESTENV
-          exit
-          ;;
-
-   -[bu]) MB=$( grep -E "^\s*#define MOTHERBOARD" Marlin/Configuration.h | awk '{ print $3 }' | $SED 's/BOARD_//' )
-          [[ -z $MB ]] && { echo "Error - Can't read MOTHERBOARD setting." ; exit 1 ; }
-          BLINE=$( grep -E "define\s+BOARD_$MB\b" Marlin/src/core/boards.h )
-          BNUM=$( $SED -E 's/^.+BOARD_[^ ]+ +([0-9]+).+$/\1/' <<<"$BLINE" )
-          BDESC=$( $SED -E 's/^.+\/\/ *(.+)$/\1/' <<<"$BLINE" )
-          [[ -z $BNUM ]] && { echo "Error - Can't find $MB in boards list." ; exit 1 ; }
-          readarray -t ENVS <<< $( grep -EA1 "MB\(.*\b$MB\b.*\)" Marlin/src/pins/pins.h | grep -E '#include.+//.+env:.+' | grep -oE 'env:[^ ]+' | $SED -E 's/env://' )
-          [[ -z $ENVS ]] && { echo "Error - Can't find target(s) for $MB ($BNUM)." ; exit 1 ; }
-          ECOUNT=${#ENVS[*]}
-
-          if [[ $ECOUNT == 1 ]]; then
-            TARGET=$ENVS
-          else
-            if [[ $CHOICE == 0 ]]; then
-              #
-              # List env names and numbers. Get selection.
-              #
-              echo "Available targets for \"$BDESC\" | $MB ($BNUM):"
-
-              IND=0 ; for ENV in "${ENVS[@]}"; do let IND++ ; echo " $IND) $ENV" ; done
-
-              if [[ $ECOUNT > 1 ]]; then
-                for (( ; ; ))
-                do
-                  read -p "Select a target for '$MB' (1-$ECOUNT) : " CHOICE
-                  [[ -z "$CHOICE" ]] && { echo '(canceled)' ; exit 1 ; }
-                  [[ $CHOICE =~ $ISNUM ]] && ((CHOICE >= 1 && CHOICE <= ECOUNT)) && break
-                  echo ">>> Invalid environment choice '$CHOICE'."
-                done
-                echo
-              fi
-            else
-              echo "Detected \"$BDESC\" | $MB ($BNUM)."
-              [[ $CHOICE > $ECOUNT ]] && { echo "Environment selection out of range." ; exit 1 ; }
-            fi
-            TARGET="${ENVS[$CHOICE-1]}"
-            echo "Selected $TARGET"
-          fi
-
-          echo "$TARGET" >"$STATE_FILE"
-
-          if [[ $TESTENV == "-u" ]]; then
-            echo "Build/Uploading environment $TARGET for board $MB ($BNUM)..." ; echo
-            pio run -t upload -e $TARGET
-          else
-            echo "Building environment $TARGET for board $MB ($BNUM)..." ; echo
-            pio run -e $TARGET
-          fi
-          exit
-          ;;
-
-          # The -y flag may come first
-      -y) TESTENV=${2:-'-'} ; CHOICE=${3:-0} ;;
-
-  -[a-z]) echo "Unknown flag $TESTENV" ; exit 1 ;;
-       -) ;;
+[1-9][1-9]|[1-9]) TESTNUM=$TESTENV ; TESTENV=- ;;
 esac
 
 if ((AUTO_BUILD)); then
@@ -210,8 +136,14 @@ if [[ $TESTENV == '-' ]]; then
   echo
   for (( ; ; ))
   do
-    read -p "Select a test to apply (1-$IND) : " NAMEIND
-    [[ -z "$NAMEIND" ]] && { echo '(canceled)' ; exit 1 ; }
+    if [[ $TESTNUM -gt 0 ]]; then
+      NAMEIND=$TESTNUM
+    else
+      read -p "Select a test to apply (1-$IND) : " NAMEIND
+    fi
+    [[ -z $NAMEIND ]] && { errout "(canceled)" ; exit 1 ; }
+    TESTENV=${NAMES[$NAMEIND-1]}
+    [[ $TESTNUM -gt 0 ]] && { echo "Preselected test $TESTNUM ... ($TESTENV)" ; TESTNUM='' ; }
     [[ $NAMEIND =~ $ISNUM ]] && ((NAMEIND >= 1 && NAMEIND <= IND)) && { TESTENV=${NAMES[$NAMEIND-1]} ; echo ; break ; }
     echo "Invalid selection."
   done
