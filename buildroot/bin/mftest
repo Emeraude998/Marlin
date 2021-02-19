@@ -6,12 +6,37 @@
 #  mftest [name] [index] [-y]         Set config options and optionally build a test
 #
 
-MFINFO=$(mfinfo) || exit 1
-[[ -d Marlin/src ]] || { echo "Please 'cd' up to repo root." ; exit 1 ; }
+[[ -d Marlin/src ]] || { echo "Please 'cd' to the Marlin repo root." ; exit 1 ; }
+
+perror() { echo -e "$0: \033[0;31m$1 -- $2\033[0m" ; }
+errout() { echo -e "\033[0;31m$1\033[0m" ; }
+bugout() { ((DEBUG)) && echo -e "\033[0;32m$1\033[0m" ; }
+
+usage() {
+  echo "
+Usage: mftest [-t|--env=<env>] [-n|--num=<num>] [-m|--make] [-y|--build=<Y|n>]
+       mftest [-a|--autobuild]
+       mftest [-r|--rebuild]
+       mftest [-u|--autoupload] [-n|--num=<num>]
+
+OPTIONS
+  -t --env         The environment of the test to apply / run. (As named in platformio.ini.)
+  -n --num         The index of the test to run. (In *-tests file order.)
+  -m --make        Use the make / Docker method for the build.
+  -y --build       Skip 'Do you want to build this test?' and assume YES.
+  -h --help        Print this help.
+  -a --autobuild   PIO Build using the MOTHERBOARD environment.
+  -u --autoupload  PIO Upload using the MOTHERBOARD environment.
+  -v --verbose     Extra output for debugging.
+
+env shortcuts: tree due esp lin lpc|lpc8 lpc9 m128 m256|mega stm|f1 f4 f7 s6 teensy|t31|t32 t35|t36 t40|t41
+
+"
+}
 
 TESTPATH=buildroot/tests
 
-STATE_FILE=$( echo ./.pio/.mftestrc )
+STATE_FILE="./.pio/.mftestrc"
 SED=$(which gsed || which sed)
 
 shopt -s extglob nocasematch
