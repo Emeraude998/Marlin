@@ -51,10 +51,14 @@ typedef struct {
 
   // Machine state
   xyze_pos_t current_position;
+  uint16_t feedrate;
   float zraise;
 
   // Repeat information
   TERN_(GCODE_REPEAT_MARKERS, Repeat stored_repeat);
+
+  TERN_(HAS_HOME_OFFSET,    xyz_pos_t home_offset);
+  TERN_(HAS_POSITION_SHIFT, xyz_pos_t position_shift);
 
   #if HAS_MULTI_EXTRUDER
     uint8_t active_extruder;
