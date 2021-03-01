@@ -8,9 +8,7 @@ from __future__ import print_function
 target_filename = "FIRMWARE.CUR"
 target_drive = "REARM"
 
-import os
-import getpass
-import platform
+import os,getpass,platform
 
 current_OS = platform.system()
 Import("env")
@@ -27,7 +25,8 @@ try:
 		#
 		# platformio.ini will accept this for a Windows upload port designation: 'upload_port = L:'
 		#   Windows - doesn't care about the disk's name, only cares about the drive letter
-		#
+		import subprocess,string
+		from ctypes import windll
 
 		#
 		# get all drives on this computer
