@@ -451,7 +451,7 @@
 #endif
 
 // Aliases for LCD features
-#if ANY(DGUS_LCD_UI_ORIGIN, DGUS_LCD_UI_FYSETC, DGUS_LCD_UI_HIPRECY)
+#if ANY(DGUS_LCD_UI_ORIGIN, DGUS_LCD_UI_FYSETC, DGUS_LCD_UI_HIPRECY,DGUS_LCD_UI_MKS)
   #define HAS_DGUS_LCD 1
 #endif
 
@@ -493,6 +493,36 @@
     #define LCD_PIXEL_HEIGHT 64
   #endif
 #endif
+
+/**
+ *  Multi-Material-Unit supported models
+ */
+#define PRUSA_MMU1      1
+#define PRUSA_MMU2      2
+#define PRUSA_MMU2S     3
+#define SMUFF_EMU_MMU2  12
+#define SMUFF_EMU_MMU2S 13
+
+#ifdef MMU_MODEL
+  #define HAS_MMU 1
+  #if MMU_MODEL == PRUSA_MMU1
+    #define HAS_PRUSA_MMU1 1
+  #elif MMU_MODEL % 10 == PRUSA_MMU2
+    #define HAS_PRUSA_MMU2 1
+  #elif MMU_MODEL % 10 == PRUSA_MMU2S
+    #define HAS_PRUSA_MMU2 1
+    #define HAS_PRUSA_MMU2S 1
+  #endif
+  #if MMU_MODEL == SMUFF_EMU_MMU2 || MMU_MODEL == SMUFF_EMU_MMU2S
+    #define HAS_SMUFF 1
+  #endif
+#endif
+
+#undef PRUSA_MMU1
+#undef PRUSA_MMU2
+#undef PRUSA_MMU2S
+#undef SMUFF_EMU_MMU2
+#undef SMUFF_EMU_MMU2S
 
 /**
  * Extruders have some combination of stepper motors and hotends
@@ -1166,4 +1196,11 @@
     #define TOUCH_OFFSET_Y       XPT2046_Y_OFFSET
     #define TOUCH_ORIENTATION    TOUCH_LANDSCAPE
   #endif
+#endif
+
+#if ANY(USE_XMIN_PLUG, USE_YMIN_PLUG, USE_ZMIN_PLUG, USE_XMAX_PLUG, USE_YMAX_PLUG, USE_ZMAX_PLUG)
+  #define HAS_ENDSTOPS 1
+  #define COORDINATE_OKAY(N,L,H) WITHIN(N,L,H)
+#else
+  #define COORDINATE_OKAY(N,L,H) true
 #endif
