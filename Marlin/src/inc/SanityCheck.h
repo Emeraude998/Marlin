@@ -906,6 +906,42 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 #endif
 
 /**
+ * Sanity checking for all Průša MMU
+ */
+#ifdef SNMM
+  #error "SNMM is obsolete. Define MMU_MODEL as PRUSA_MMU1 instead."
+#elif ENABLED(MK2_MULTIPLEXER)
+  #error "MK2_MULTIPLEXER is obsolete. Define MMU_MODEL as PRUSA_MMU1 instead."
+#elif ENABLED(PRUSA_MMU2)
+  #error "PRUSA_MMU2 is obsolete. Define MMU_MODEL as PRUSA_MMU2 instead."
+#elif ENABLED(PRUSA_MMU2_S_MODE)
+  #error "PRUSA_MMU2_S_MODE is obsolete. Define MMU_MODEL as PRUSA_MMU2S instead."
+#endif
+
+/**
+ * Multi-Material-Unit 2 / SMuFF requirements
+ */
+#if HAS_PRUSA_MMU2
+  #if EXTRUDERS != 5
+    #undef SINGLENOZZLE
+    #error "PRUSA_MMU2(S) requires exactly 5 EXTRUDERS. Please update your Configuration."
+  #elif DISABLED(NOZZLE_PARK_FEATURE)
+    #error "PRUSA_MMU2(S) requires NOZZLE_PARK_FEATURE. Enable it to continue."
+  #elif HAS_PRUSA_MMU2S && DISABLED(FILAMENT_RUNOUT_SENSOR)
+    #error "PRUSA_MMU2S requires FILAMENT_RUNOUT_SENSOR. Enable it to continue."
+  #elif ENABLED(MMU_EXTRUDER_SENSOR) && DISABLED(FILAMENT_RUNOUT_SENSOR)
+    #error "MMU_EXTRUDER_SENSOR requires FILAMENT_RUNOUT_SENSOR. Enable it to continue."
+  #elif ENABLED(MMU_EXTRUDER_SENSOR) && !HAS_LCD_MENU
+    #error "MMU_EXTRUDER_SENSOR requires an LCD supporting MarlinUI to be enabled."
+  #elif DISABLED(ADVANCED_PAUSE_FEATURE)
+    static_assert(nullptr == strstr(MMU2_FILAMENT_RUNOUT_SCRIPT, "M600"), "ADVANCED_PAUSE_FEATURE is required to use M600 with PRUSA_MMU2(S) / SMUFF_EMU_MMU2(S).");
+  #endif
+#endif
+#if HAS_SMUFF && EXTRUDERS > 12
+  #error "Too many extruders for SMUFF_EMU_MMU2(S). (12 maximum)."
+#endif
+
+/**
  * Options only for EXTRUDERS > 1
  */
 #if HAS_MULTI_EXTRUDER
@@ -1194,8 +1230,8 @@ static_assert(Y_MAX_LENGTH >= Y_BED_SIZE, "Movement bounds (Y_MIN_POS, Y_MAX_POS
 /**
  * Allow only one kinematic type to be defined
  */
-#if MANY(DELTA, MORGAN_SCARA, COREXY, COREXZ, COREYZ, COREYX, COREZX, COREZY, MARKFORGED_XY)
-  #error "Please enable only one of DELTA, MORGAN_SCARA, COREXY, COREYX, COREXZ, COREZX, COREYZ, COREZY, or MARKFORGED_XY."
+#if MANY(DELTA, MORGAN_SCARA, AXEL_TPARA, COREXY, COREXZ, COREYZ, COREYX, COREZX, COREZY, MARKFORGED_XY)
+  #error "Please enable only one of DELTA, MORGAN_SCARA, AXEL_TPARA, COREXY, COREYX, COREXZ, COREZX, COREYZ, COREZY, or MARKFORGED_XY."
 #endif
 
 /**
